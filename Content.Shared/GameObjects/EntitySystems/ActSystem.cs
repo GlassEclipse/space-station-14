@@ -40,7 +40,7 @@ namespace Content.Shared.GameObjects.EntitySystems
     public interface IExAct
     {
         /// <summary>
-        /// Called when explosion reaches the entity
+        ///     Called when explosion reaches the entity
         /// </summary>
         void OnExplosion(ExplosionEventArgs eventArgs);
     }
@@ -50,6 +50,21 @@ namespace Content.Shared.GameObjects.EntitySystems
         public EntityCoordinates Source { get; set; }
         public IEntity Target { get; set; }
         public ExplosionSeverity Severity { get; set; }
+    }
+
+    public interface IEMPAct
+    {
+        /// <summary>
+        ///     Called after EMP reaches entity
+        /// </summary>
+        void OnEMP(EMPEventArgs eventArgs);
+    }
+
+    public class EMPEventArgs : EventArgs
+    {
+        public EntityCoordinates Source { get; set; }
+        public IEntity Target { get; set; }
+        public EMPSeverity Severity { get; set; }
     }
 
     [UsedImplicitly]
@@ -99,6 +114,21 @@ namespace Content.Shared.GameObjects.EntitySystems
                 breakAct.OnBreak(eventArgs);
             }
         }
+
+        public void HandleEMP(EntityCoordinates source, IEntity target, EMPSeverity severity)
+        {
+            var eventArgs = new EMPEventArgs
+            {
+                Source = source,
+                Target = target,
+                Severity = severity
+            };
+            var empActs = target.GetAllComponents<IEMPAct>().ToList();
+            foreach (var empAct in empActs)
+            {
+                empAct.OnEMP(eventArgs);
+            }
+        }
     }
 
     public enum ExplosionSeverity
@@ -106,5 +136,12 @@ namespace Content.Shared.GameObjects.EntitySystems
         Light,
         Heavy,
         Destruction,
+    }
+
+    public enum EMPSeverity
+    {
+        Light,
+        Heavy,
+        Devastation 
     }
 }

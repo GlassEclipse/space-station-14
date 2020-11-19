@@ -13,6 +13,7 @@ using Robust.Shared.Localization;
 using Robust.Shared.Serialization;
 using Robust.Shared.Utility;
 using Robust.Shared.ViewVariables;
+using Robust.Shared.Random;
 
 namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
 {
@@ -20,7 +21,7 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
     ///     Attempts to link with a nearby <see cref="IPowerProvider"/>s so that it can receive power from a <see cref="IApcNet"/>.
     /// </summary>
     [RegisterComponent]
-    public class PowerReceiverComponent : Component, IExamine
+    public class PowerReceiverComponent : Component, IExamine, IEMPAct
     {
         [Dependency] private readonly IServerEntityManager _serverEntityManager = default!;
 
@@ -31,7 +32,7 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
         public event EventHandler<PowerStateEventArgs>? OnPowerStateChanged;
 
         [ViewVariables]
-        public bool Powered => (HasApcPower || !NeedsPower) && !PowerDisabled;
+        public bool Powered => (HasApcPower || !NeedsPower) && !PowerDisabled && EMPTimeLeft <= 0f;
 
         [ViewVariables]
         public bool HasApcPower { get => _hasApcPower; set => SetHasApcPower(value); }
@@ -76,8 +77,12 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
         ///     When true, causes this to never appear powered.
         /// </summary>
         [ViewVariables(VVAccess.ReadWrite)]
-        public bool PowerDisabled { get => _powerDisabled; set => SetPowerDisabled(value); }
+        public bool PowerDisabled { get => _powerDisabled; set => SetPowerDisabled(value); } //TODO: this really should be a list of blocking factors
         private bool _powerDisabled;
+
+
+        [ViewVariables(VVAccess.ReadWrite)]
+        public float EMPTimeLeft { get; private set; }
 
         public override void ExposeData(ObjectSerializer serializer)
         {
@@ -112,6 +117,41 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
             base.OnRemove();
         }
 
+        public void OnEMP(EMPEventArgs eventArgs)
+        {
+            bool oldPoweredState = Powered;
+            var random = new Random();
+            switch (eventArgs.Severity)
+            {
+                case EMPSeverity.Devastation:
+                    EMPTimeLeft = random.Next(160, 180);
+                    break;
+                case EMPSeverity.Heavy:
+                    EMPTimeLeft = random.Next(35, 55);
+                    break;
+                case EMPSeverity.Light:
+                    EMPTimeLeft = random.Next(10, 20);
+                    break;
+            }
+            if(Powered != oldPoweredState)
+              OnNewPowerState();
+        }
+
+        public void Update(float frameTime)
+        {
+            if (EMPTimeLeft > 0)
+            {
+                bool oldPoweredState = Powered;
+                EMPTimeLeft -= frameTime;
+                if (EMPTimeLeft <= 0)
+                {
+                    EMPTimeLeft = 0;
+                    if(oldPoweredState != Powered)
+                        OnNewPowerState();
+                }
+            }
+        }
+
         public void TryFindAndSetProvider()
         {
             if (TryFindAvailableProvider(out var provider))
@@ -119,6 +159,16 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
                 Provider = provider;
             }
         }
+
+        public void ClearProvider()
+        {
+            _provider.RemoveReceiver(this);
+            _provider = PowerProviderComponent.NullProvider;
+            NeedsProvider = true;
+            HasApcPower = false;
+        }
+
+
 
         private bool TryFindAvailableProvider(out IPowerProvider foundProvider)
         {
@@ -146,13 +196,6 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
             return false;
         }
 
-        public void ClearProvider()
-        {
-            _provider.RemoveReceiver(this);
-            _provider = PowerProviderComponent.NullProvider;
-            NeedsProvider = true;
-            HasApcPower = false;
-        }
 
         private void SetProvider(IPowerProvider newProvider)
         {
@@ -227,13 +270,13 @@ namespace Content.Server.GameObjects.Components.Power.ApcNetComponents
                 ClearProvider();
             }
         }
+
         ///<summary>
         ///Adds some markup to the examine text of whatever object is using this component to tell you if it's powered or not, even if it doesn't have an icon state to do this for you.
         ///</summary>
-
         public void Examine(FormattedMessage message, bool inDetailsRange)
         {
-            message.AddMarkup(Loc.GetString("It appears to be {0}.", Powered ? "[color=darkgreen]powered[/color]" : "[color=darkred]un-powered[/color]"));
+            message.AddMarkup(Loc.GetString("It appears to be {0}.", EMPTimeLeft > 0 ? "under the effect of an [color=blue]EMP[/color]" : (Powered ? "[color=darkgreen]powered[/color]" : "[color=darkred]un-powered[/color]")));
         }
     }
 

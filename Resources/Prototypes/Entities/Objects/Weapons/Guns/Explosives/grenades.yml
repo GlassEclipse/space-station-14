@@ -49,6 +49,33 @@
     visuals:
     - type: TimerTriggerVisualizer
       countdown_sound: /Audio/Effects/countdown.ogg
+      
+- type: entity
+  name: emp grenade
+  description: Grenade that disables electronics in a radius.
+  parent: BaseItem
+  id: EmpGrenade
+  components:
+  - type: Sprite
+    sprite: Objects/Weapons/Grenades/grenade.rsi
+    layers:
+    - state: icon
+      map: ["enum.TriggerVisualLayers.Base"]
+
+  - type: Item
+    size: 5
+  - type: OnUseTimerTrigger
+    delay: 3.5
+  - type: EMPExplosive
+    devastationRange: 0
+    heavyRange: 3
+    lightRange: 7
+  - type: Destructible
+    deadThreshold: 10
+  - type: Appearance
+    visuals:
+    - type: TimerTriggerVisualizer
+      countdown_sound: /Audio/Effects/countdown.ogg
 
 - type: entity
   name: Syndicate minibomb

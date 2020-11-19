@@ -12,3 +12,9 @@
   id: FlashedEffect
   kind: source
   path: "/Textures/Shaders/flashed_effect.swsl"
+
+- type: shader
+  id: EMPShockwave
+  kind: source
+  path: "/Textures/Shaders/emp_shockwave.swsl"
+

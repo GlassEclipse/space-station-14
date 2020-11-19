@@ -14,6 +14,7 @@
             "Temperature",
             "AtmosExposed",
             "Explosive",
+            "EMPExplosive",
             "OnUseTimerTrigger",
             "WarpPoint",
             "EmitSoundOnUse",

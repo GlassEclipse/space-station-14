@@ -1,0 +1,13 @@
+﻿
+uniform sample2D SCREEN_TEXTURE;
+uniform highp float radius = 6;
+uniform highp float intensity = 30;
+uniform highp vec2 center = vec2(0,0);
+
+void fragment() {
+	vec2 targetCoords = FRAGCOORD.xy - center;
+	float distToRing = length(targetCoords) - radius;
+	targetCoords *= 1 + clamp(intensity/distToRing, -1, 1);
+	targetCoords += center;
+	COLOR = texture(SCREEN_TEXTURE, targetCoords*SCREEN_PIXEL_SIZE);
+}

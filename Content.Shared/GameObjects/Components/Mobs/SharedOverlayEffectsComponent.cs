@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -116,5 +116,6 @@ namespace Content.Shared.GameObjects.Components.Mobs
         CircleMaskOverlay,
         FlashOverlay,
         RadiationPulseOverlay,
+        EMPOverlay
     }
 }
