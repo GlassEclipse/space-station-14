@@ -80,3 +80,11 @@
   components:
     - type: ComputerBoard
       prototype: BlockGameArcade
+      
+- type: entity
+  id: HyperCryptoConsoleComputerCircuitBoard
+  parent: BaseComputerCircuitboard
+  name: hypercrypto uplink circuit board
+  components:
+    - type: ComputerBoard
+      prototype: ComputerHyperCrypto

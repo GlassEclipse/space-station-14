@@ -305,3 +305,23 @@
       type: SolarControlConsoleBoundUserInterface
   - type: Computer
     board: SolarControlComputerCircuitboard
+    
+    
+- type: entity
+  id: ComputerHyperCrypto
+  parent: ComputerBase
+  name: HyperCrypto Uplink
+  description: Buy high, sell low.
+  components:
+  - type: Appearance
+    visuals:
+    - type: ComputerVisualizer
+      key: generic_key
+      screen: solar_screen
+  - type: UserInterface
+    interfaces:
+    - key: enum.HyperCryptoConsoleUiKey.Key
+      type: HyperCryptoConsoleBoundUserInterface
+  - type: Computer
+    board: SolarControlComputerCircuitboard
+  - type: HyperCryptoConsole
